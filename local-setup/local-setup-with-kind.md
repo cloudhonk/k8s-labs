@@ -50,5 +50,5 @@ kubectl cluster-info --context kind-k8s-labs
 
 ### Deleting a Cluster
 ```bash
-kind delete cluster
+kind delete cluster --name k8s-labs
 ```
