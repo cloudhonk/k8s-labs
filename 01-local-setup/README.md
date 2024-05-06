@@ -3,7 +3,7 @@
 In this labs we will be using `kind` to provision a kubernetes cluster. Once the cluster is ready, We also require `kubectl` tool to interact with kubernetes cluster.
 
 ## kubectl
-The kubernetes command-line tool, kubectl, allows you to run commands against kubernetes clusters. You can use kubectl to deploy applications, inspect and manage cluster resources, and view logs.
+The kubernetes command-line tool, kubectl, allows you to run commands against kubernetes clusters. You can use kubectl to deploy applications, inspect and manage cluster resources, and view logs. For more [details](https://kubernetes.io/docs/tasks/tools/#kubectl).
 ### Installation
 #### On macOS
 ```bash
@@ -24,7 +24,7 @@ kubectl version --client
 sudo chown root: /usr/local/bin/kubectl
 ```
 ### Kind
-Kind lets you run kubernetes on your local computer. This tool requires that you have either Docker or Podman installed.
+Kind lets you run kubernetes on your local computer. This tool requires that you have either Docker or Podman installed. For more [details](https://kind.sigs.k8s.io/docs/user/quick-start/#installation).
 ### Installation
 #### On macOS
 ```bash
