@@ -42,10 +42,36 @@ sudo mv ./kind /usr/local/bin/kind
 kind create cluster --name k8s-labs
 ```
 
+### Creating a multi-node cluster
+Previously, we had created a single node cluster. Now we will be setting up a multi-node cluster where we will have 1 master node and 2 worker nodes.
+
+Copy the content locally with name `kind-config.yaml`
+
+```bash
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+- role: worker
+- role: worker
+```
+
+Now, use the local config file to create a multi-node cluster
+```bash
+kind create cluster --name k8s-labs --config kind-config.yaml
+```
+
 ### Interacting with your Cluster
 ```bash
 kind get clusters
+```
+
+```bash
 kubectl cluster-info --context kind-k8s-labs
+```
+
+```bash
+kubectl get nodes
 ```
 
 ### Deleting a Cluster
