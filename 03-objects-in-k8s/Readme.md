@@ -6,7 +6,7 @@
 
     [Read more on kubernetes objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/)
 
-### **Object Configuration**
+### Object Configuration
 - Almost every Kubernetes object the object `spec` and the object `status` config.
 - You have to set `spec` when you create the object, providing the desired state.
 - The `status` describes the current state of the object.
