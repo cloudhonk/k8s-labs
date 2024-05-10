@@ -1,5 +1,5 @@
 ### Understanding Objects in K8s
-- A Kubernetes object is a "record of intent" once you create the object, the Kubernetes system will constantly work to ensure that object exists.
+- A Kubernetes object is a `record of intent` once you create the object, the Kubernetes system will constantly work to ensure that object exists.
 - Kubernetes objects are persistent entities in the Kubernetes system.
 - Kubernetes uses these entities to represent the state of your cluster.
 - Kubernetes objects are managed using the Kubernetes API.
@@ -11,7 +11,7 @@
 - You have to set `spec` when you create the object, providing the desired state.
 - The `status` describes the current state of the object.
 
-### **Required Fields**
+**Required Fields**
 
 - `apiVersion`, `kind`, `metadata`, `spec`
 
@@ -23,31 +23,34 @@
 Each object in your cluster has a Name that is unique for that type of resource. Every Kubernetes object also has a UID that is unique across your whole cluster.
 
 ```bash
-kubectl create deployment nginx --image nginx
-```
-
-```bash
-kubectl delete deployment nginx
+kubectl run nginx --image nginx
+kubectl port-forward nginx 8989:80
+kubectl delete pod nginx
 ```
 
 #### Imperative Object Configuration
 
 ```bash
-kubectl apply -f config/pod.yaml
+kubectl create -f configs/pod.yaml
 ```
 
 ```bash
-kubectl delete -f config/pod.yaml
+kubectl delete -f configs/pod.yaml
 ```
 
 #### Declarative Object Configuration
 
 ```bash
-kubectl apply -f config/
+kubectl apply -f configs/
 ```
 
 ```bash
-kubectl delete -f config/
+kubectl diff -f configs/
+```
+
+
+```bash
+kubectl delete -f configs/
 ```
 
 [Read more on Object Management](https://kubernetes.io/docs/concepts/overview/working-with-objects/object-management/)
