@@ -19,17 +19,17 @@ kubect run nginx --image=nginx
 
 - `apiVersion`, `kind`, `metadata`, `spec`
 
-**1. Object Management** [link](https://kubernetes.io/docs/concepts/overview/working-with-objects/object-management/)
+### 1. Object Management [link](https://kubernetes.io/docs/concepts/overview/working-with-objects/object-management/)
 
 - kubectl imperative
 - kubectl imperative using config files
 - kubectl declarative using config files
 
-**2. Object Names and IDs** [link](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/)
+### 2. Object Names and IDs [link](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/)
 
 Each object in your cluster has a Name that is unique for that type of resource. Every Kubernetes object also has a UID that is unique across your whole cluster.
 
-**3. Namespaces** [link](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
+### 3. Namespaces [link](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
 
 In Kubernetes, namespaces provide a mechanism for isolating groups of resources within a single cluster. Names of resources need to be unique within a namespace, but not across namespaces.
 
@@ -41,5 +41,4 @@ In Kubernetes, namespaces provide a mechanism for isolating groups of resources 
 **Initial Namespaces**
 
 - `default`, `kube-node-lease`, `kube-public`, `kube-system`
-
 
