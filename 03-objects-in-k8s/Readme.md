@@ -81,13 +81,26 @@ kubectl get namespaces
 ### Pod
 
 Pods are the smallest deployable units of computing that you can create and manage in Kubernetes.
-It is a group of one or more containers, with shared storage and entwork resources, and a specification for how to run the containers.
+It is a group of one or more containers, with shared storage and network resources, and a specification for how to run the containers.
 
 #### Few Points about pods
 - Pods are ephimeral and disposable entities
 - Usually we don't create pods directly, we create them using workload resources like Deployments or job. If the pods require to have a statefullness, consider using Statefulset resource.
 - Each pod is meant to run single instance of a given application.
 
+#### Phases of Pod
+- Pending
+- Running
+- Succeeded
+- Failed
+- Unknown
+
+#### Create a pod
 ```bash
 kubectl apply -f configs/pod.yaml
+```
+
+#### Delete a running pod
+```bash
+kubectl delete -f configs/pod.yaml
 ```
