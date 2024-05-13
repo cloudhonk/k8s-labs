@@ -94,7 +94,7 @@ kubectl describe configmaps k8s-labs
 
 #### Reference ConfigMap with a Pod
 ```bash
-kubectl apply -f configs/pod.yaml
+kubectl apply -f configs/pod-configmap.yaml
 ```
 
 #### Fetch the values of the ConfigMaps from Pod
@@ -112,7 +112,7 @@ kubectl apply -f configs/secrets.yaml
 
 #### Configure Pods with Secrets
 ```bash
-kubectl apply -f configs/pod.yaml
+kubectl apply -f configs/pod-secrets.yaml
 ```
 
 #### Fetch the Secrets Value from a Pod
