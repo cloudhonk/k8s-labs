@@ -76,7 +76,7 @@ kubectl apply -f configs/service.yaml
 
 #### Delete a Service
 ```bash
-kubectl delete -f conifigs/service.yaml
+kubectl delete -f configs/service.yaml
 ```
 
 ### ConfigMap
