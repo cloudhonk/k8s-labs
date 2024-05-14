@@ -48,7 +48,6 @@ kubectl apply -f configs/
 kubectl diff -f configs/
 ```
 
-
 ```bash
 kubectl delete -f configs/
 ```
