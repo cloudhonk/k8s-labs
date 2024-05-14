@@ -22,13 +22,67 @@ It is a group of one or more containers, with shared storage and network resourc
 - Unknown
 
 #### Create a Pod
-```bash
-kubectl apply -f configs/pod.yaml
+
+**Example**
+
+Creating via kubectl
+
+```shell
+kubectl run sleeping-pod --image=busybox --restart=Never --command -- sleep 5
 ```
 
-#### Delete a running Pod
-```bash
-kubectl delete -f configs/pod.yaml
+**Example**
+
+Basic pod template
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+  - name: mycontainer
+    image: nginx
+```
+
+**Example**
+
+Adding Environment Variable
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+  - name: mycontainer
+    image: nginx
+    env:
+    - name: MY_VAR
+      value: "hello"
+```
+
+**Example**
+
+Providing resource contraints
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+  - name: mycontainer
+    image: nginx
+    resources:
+      limits:
+        cpu: "0.5"
+        memory: "512Mi"
+      requests:
+        cpu: "0.25"
+        memory: "256Mi"
 ```
 
 [Read more on Pods](https://kubernetes.io/docs/concepts/workloads/pods/)
@@ -47,6 +101,61 @@ A Deployment provides declarative updates for Pods and ReplicaSets.
 - Create a deployment to rollout a replicaset
 - Use the status of the deployment
 - Clean up older ReplicaSets
+
+**Example**
+
+**Initial Deployment**
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mydeployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: mycontainer
+        image: nginx
+        ports:
+        - containerPort: 80
+
+```
+
+**Adding Environment Variables**
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mydeployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: mycontainer
+        image: nginx
+        ports:
+        - containerPort: 80
+        env:
+        - name: MY_VAR
+          value: "hello"
+
+```
 
 #### Create a Deployment
 ```bash
