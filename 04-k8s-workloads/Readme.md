@@ -3,10 +3,16 @@
 Pods are the smallest deployable units of computing that you can create and manage in Kubernetes.
 It is a group of one or more containers, with shared storage and network resources, and a specification for how to run the containers.
 
+![Pod](../images/pea.png)
+
 #### Few Points about Pods
 - Pods are ephimeral and disposable entities
+- Pods are immutable in nature. 
+- Pod has its own IP address. Containers Inside a pod share the same network and IP. 
 - Usually we don't create pods directly, we create them using workload resources like Deployments or job. If the pods require to have a statefullness, consider using Statefulset resource.
 - Each pod is meant to run single instance of a given application.
+
+![Pod](../images/pod.png)
 
 #### Phases of Pod
 - Pending
@@ -30,6 +36,8 @@ kubectl delete -f configs/pod.yaml
 ### Deployments
 
 A Deployment provides declarative updates for Pods and ReplicaSets.
+
+![Pod](../images/deployment.png)
 
 #### Use Cases
 - Declare the new state of the Pods
@@ -59,64 +67,3 @@ kubectl rollout status deployment/nginx-deployment
 ```bash
 kubectl delete -f configs/deployment.yaml
 ```
-
-### Service
-
-A Service is a method for exposing a network application that is running as one or more Pods in your cluster.
-
-#### Service Types
-- ClusterIP: Default service type, it exposes the service on an internal IP address within the cluster and can only be accessible from within the cluster.
-- NodePort: Exposes the Service on a port across all nodes in the custer(Port ranges: 30000-32767)
-- LoadBalancer: Provision external loadbalancer to distribute traffic to the service. Useful for exposing service to the clients.
-
-#### Create a Service
-```bash
-kubectl apply -f configs/service.yaml
-```
-
-#### Delete a Service
-```bash
-kubectl delete -f configs/service.yaml
-```
-
-### ConfigMap
-A ConfigMap is an API object used to store non-confidential data in key-value pairs. Pods can consume ConfigMaps as environment variables, command-line arguments, or as configuration files in a volume.
-
-#### Create a ConfigMaps
-```bash
-kubectl apply -f configs/configmap.yaml
-```
-
-#### Get the ConfigMaps
-```bash
-kubectl describe configmaps k8s-labs
-```
-
-#### Reference ConfigMap with a Pod
-```bash
-kubectl apply -f configs/pod-configmap.yaml
-```
-
-#### Fetch the values of the ConfigMaps from Pod
-```bash
-kubectl exec -it nginx -- env | grep -E 'LOG_LEVEL|API_KEY|LAB_NAME'
-```
-
-### Secrets
-A Secret is an object that contains a small amount of sensitive data such as a password, a token, or a key.
-
-#### Create a secrets
-```bash
-kubectl apply -f configs/secrets.yaml
-```
-
-#### Configure Pods with Secrets
-```bash
-kubectl apply -f configs/pod-secrets.yaml
-```
-
-#### Fetch the Secrets Value from a Pod
-```bash
-kubectl exec -it nginx -- /bin/sh -c 'echo $password'
-```
-

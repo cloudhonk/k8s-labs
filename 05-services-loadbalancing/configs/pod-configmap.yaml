@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    app: k8s-lab
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.14.2
+    ports:
+    - containerPort: 80
+    env:
+      - name: API_KEY
+        valueFrom:
+          configMapKeyRef:
+            name: k8s-labs
+            key: API_KEY
+      - name: LAB_NAME
+        valueFrom:
+          configMapKeyRef:
+            name: k8s-labs
+            key: LAB_NAME
+      - name: LOG_LEVEL
+        valueFrom:
+          configMapKeyRef:
+            name: k8s-labs
+            key: LOG_LEVEL
