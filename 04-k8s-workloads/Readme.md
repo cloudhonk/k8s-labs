@@ -176,3 +176,56 @@ kubectl rollout status deployment/nginx-deployment
 ```bash
 kubectl delete -f configs/deployment.yaml
 ```
+
+## CornJob
+
+A CronJob creates Jobs on a repeating schedule.
+
+### CronJob Spec
+```
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12)
+# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
+# │ │ │ │ │                                   OR sun, mon, tue, wed, thu, fri, sat
+# │ │ │ │ │
+# │ │ │ │ │
+# * * * * *
+
+For example, 0 0 13 * 5 states that the task must be started every Friday at midnight, as well as on the 13th of each month at midnight.
+```
+### Create a Cron Job
+```bash
+kubectl apply -f configs/cronjob.yaml
+```
+
+### Get the cron job details
+```bash
+kubectl get cronjob
+```
+
+### Get the logs from the Cron Job
+```bash
+kubectl logs jobs/k8s-labs-{replace-the-string-here} # You can submit to atomate it, PRs are welcome :).
+```
+
+## Job
+A job creates one or more Pods and will continue to retry execution of the Pods until a specified number of them successfully terminate.
+
+A simple case is to create one Job object in order to reliably run one Pod to completion. The Job object will start a new Pod if the first Pod fails or is delete.
+
+### Run a job that computes π to 2000 places
+```bash
+kubectl apply -f configs/job.yaml
+```
+
+### List the pods associated with the job
+```bash
+pods=$(kubectl get pods --selector=batch.kubernetes.io/job-name=pi --output=jsonpath='{.items[*].metadata.name}')
+```
+
+### Check the logs of a pods
+```bash
+kubectl logs $pods
+```
