@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-labs
+spec:
+  selector:
+    matchLabels:
+      run: k8s-labs
+  template:
+    metadata:
+      labels:
+        run: k8s-labs
+    spec:
+      containers:
+      - name: k8s-labs
+        image: registry.k8s.io/hpa-example
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 400m
