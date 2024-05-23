@@ -58,7 +58,7 @@ done
 
 ```shell
 docker build -t job-wq-1 .
-kind load docker-image job-wq-1:latest
+kind load docker-image job-wq-1:latest -n k8s-labs
 ```
 
 ### Running the Job
