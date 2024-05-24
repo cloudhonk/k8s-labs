@@ -177,6 +177,11 @@ kubectl rollout status deployment/nginx-deployment
 kubectl delete -f configs/deployment.yaml
 ```
 
+#### Other information on Deployments
+
+- https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment
+- https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment
+
 ## CornJob
 
 A CronJob creates Jobs on a repeating schedule.

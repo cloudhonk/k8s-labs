@@ -1,0 +1,16 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ping
+spec:
+  parallelism: 1
+  completions: 4
+  template:
+    spec:
+      containers:
+      - name: ping-test
+        image: busybox
+        command: ["ping",  "-c", "5", "asdfgoogle.com"]
+      restartPolicy: OnFailure
+  backoffLimit: 4
