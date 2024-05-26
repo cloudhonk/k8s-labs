@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pi-web
+  labels:
+    app: k8s-labs
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: pi-web
+  template:
+    metadata:
+      labels:
+        app: pi-web-app
+    spec:
+      containers:
+        - image: omegazyadav/pi
+          command: ["donet", "Pi.Web.dll", "-m", "web"]
+          name: web
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            limits:
+              cpu: "32"
+              memory: "128Gi"
+          readinessProbe:
+            tcpSocket:
+              port: 8020
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthy
+              port: 80
+            periodSeconds: 30
+            failureThreshold: 1
+
