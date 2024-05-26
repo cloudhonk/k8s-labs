@@ -1,10 +1,13 @@
-# Troubleshooting Apps in Kubernetes
+# k8s-labs
 
-You'll have to spend a lot of the time in Kubectl troubleshooting problems.
+### Prerequisites:
+- Create a cluster with kind configuration located at `01-local-setup`
+```bash
+kind create cluster --name k8s-labs --config ../../01-local-setup/kind-config.yaml
+```
+- Revise the deployment and service classes
 
-## K8s-Labs
-
-Please revise the deployment and service classes. The problem statement is only based on these resources.
+### Problem Statement
 Currently the deployment and services are in broken state. You can make whatever changes you need to get the application running.
 
 ```
