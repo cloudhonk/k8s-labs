@@ -45,9 +45,11 @@ nginx-5f5c47659-66854   1/1     Running   0          91s   10.244.0.28   k8s-lab
 nginx-5f5c47659-lbb4m   1/1     Running   0          90s   10.244.0.29   k8s-labs-control-plane   <none>           <none>
 ```
 
-Deploy network utility pods
+Deploy network utility pods and run the connectivity check commands
 ```shell
-~> / # wget -qO- --server-response 10.244.0.27
+~> kubectl run utility -it --image=busybox -- /bin/sh
+
+/ # wget -qO- --server-response 10.244.0.27
   HTTP/1.1 200 OK
   Server: nginx/1.14.2
   Date: Thu, 23 May 2024 04:33:03 GMT
@@ -182,11 +184,17 @@ Commercial support is available at
 ### Service Types
 
 - Cluster IP(default): service will only be accessible inside the cluster, via the cluster IP.
+  - You can specify your own cluster IP address as part of a Service creation request. To do this, set the .spec.clusterIP field.
 - NodePort: Service will be exposed on one port of every node, in addition to 'ClusterIP' type.
+  - Kubernetes control plane allocates a port from a range specified by --service-node-port-range flag (default: 30000-32767).
+  - Each node proxies that port (the same port number on every Node) into your Service.
 - LoadBalancer: Service will be exposed via an external loadbalancer (if the cloud provider supports it), in addition to 'NodePort' type.
 - ExternalName: Service consists of only a reference to an external name that kubedns or equivalent will return as a CNAME record.
 
-NodePort Service
+**Cluster IP**
+Default type is cluster Ip and is already created in above examples.
+
+**NodePort Service**
 
 ```shell
 ~> kubectl apply -f configs/nodeport-service.yaml
@@ -230,7 +238,8 @@ Commercial support is available at
 </html>
 ```
 
-Loadbalancer Service
+**Loadbalancer Service**
+
 ```shell
 ~> kubectl apply -f configs/loadbalancer-service.yaml 
 service/lb-nginx created
@@ -279,11 +288,100 @@ Accept-Ranges: bytes
 ~> kubectl delete pod curl
 ```
 
-## Ingress
+**Headless service**
 
-Make your HTTP (or HTTPS) network service available using a protocol-aware configuration mechanism, that understands web concepts like URIs, hostnames, paths, and more. The Ingress concept lets you map traffic to different backends based on rules you define via the Kubernetes API.
+Headless service is special type of ClusterIp service. A headless service refers to a Service resource that does not have a cluster IP address assigned. To define a headless service, we set the spec.clusterIP field to None in its resource definition. 
 
-## Ingress Controller
+When we resolve the domain name of a typical service, the DNS returns a single IP address, which is the cluster IP of the service assigned by the control plane. However, a DNS query of a headless service’s name returns a list of IP addresses that belong to the backing pods.
+
+This capability allows certain use cases that are not possible with normal services. For example, a monitoring service can use a headless service to find out the IP addresses of all the pods to send health check requests. With a regular service, there’s no guarantee as to which backing pod will receive the request.
+
+Deploying headless-service
+```shell
+~> kubectl apply -f configs/headless-service.yaml
+service/headless-nginx created
+statefulset.apps/nginx created
+
+~> kubectl get pods -l=app=stateful-nginx -o wide
+NAME      READY   STATUS    RESTARTS   AGE     IP            NODE                     NOMINATED NODE   READINESS GATES
+nginx-0   1/1     Running   0          3m22s   10.244.0.74   k8s-labs-control-plane   <none>           <none>
+nginx-1   1/1     Running   0          3m18s   10.244.0.75   k8s-labs-control-plane   <none>           <none>
+nginx-2   1/1     Running   0          3m15s   10.244.0.76   k8s-labs-control-plane   <none>           <none>
+
+~> kubectl get svc
+NAME             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+headless-nginx   ClusterIP   None            <none>        80/TCP         4m22s
+
+~> kubectl run utility --image=busybox --restart=Never -- /bin/sh
+
+## Look at the response of the nslookup. It is responding with 3 ip addresses unlike default cluster ip service where it returns single service IP address.
+/ # nslookup headless-nginx
+Server:         10.96.0.10
+Address:        10.96.0.10:53
+
+** server can't find headless-nginx.cluster.local: NXDOMAIN
+
+** server can't find headless-nginx.svc.cluster.local: NXDOMAIN
+
+** server can't find headless-nginx.cluster.local: NXDOMAIN
+
+** server can't find headless-nginx.svc.cluster.local: NXDOMAIN
+
+Name:   headless-nginx.default.svc.cluster.local
+Address: 10.244.0.74
+Name:   headless-nginx.default.svc.cluster.local
+Address: 10.244.0.75
+Name:   headless-nginx.default.svc.cluster.local
+Address: 10.244.0.76
+
+# Headless service when used in combination with stateful sets can be used to give subdomain to the pods
+/ # nslookup nginx-0.headless-nginx.default.svc.cluster.local
+Server:         10.96.0.10
+Address:        10.96.0.10:53
+
+
+Name:   nginx-0.headless-nginx.default.svc.cluster.local
+Address: 10.244.0.74
+```
+
+
+# Ingress [details](https://kubernetes.io/docs/concepts/services-networking/ingress/)
+
+Make your HTTP (or HTTPS) network service available using a protocol-aware configuration mechanism, that understands web concepts like URIs, hostnames, paths, and more. The Ingress concept lets you map traffic to different backends based on rules you define via the Kubernetes API. 
+
+Ingress Setup: https://kind.sigs.k8s.io/docs/user/ingress/
+
+Deploy Nginx Ingress Controller
+
+```shell
+
+## add the ingress=true label to the node
+kubectl label nodes k8s-labs-control-plane ingress-ready=true
+
+## deploy the nginx ingress controller
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
+## wait for it to get stable
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=90s
+
+```
+
+Deploy Ingress Resource
+
+```shell
+#deploy nginx pods
+kubectl apply -f configs/deployment.yaml
+
+#deploy nginx service
+kubectl apply -f configs/cluster-service.yaml 
+
+#deploy ingress resource
+kubectl apply -f configs/ingress.yaml
+```
+## Ingress Controller [details](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)
 
 In order for an Ingress to work in your cluster, there must be an ingress controller running. You need to select at least one ingress controller and make sure it is set up in your cluster. This page lists common ingress controllers that you can deploy.
 
