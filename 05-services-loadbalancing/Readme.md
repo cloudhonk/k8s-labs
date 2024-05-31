@@ -19,7 +19,11 @@
 
 ## Service
 
-In Kubernetes, a Service is a method for exposing a network application that is running as one or more Pods in your cluster.
+In Kubernetes, a Service is a method for exposing a network application that is running as one or more Pods in your cluster. 
+
+- When Kubernetes starts a container, it provides environment variables pointing to all the Services which were running when the container was started.
+- The DNS server watches the Kubernetes API for new Services and creates a set of DNS records for each.
+- Use headless Services (which have a ClusterIP of None) for service discovery when you don't need kube-proxy load balancing.
 
 ![Service](../images/k8s-service.png)
 

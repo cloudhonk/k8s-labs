@@ -2,10 +2,19 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: k8s-labs
-  namespace: default
+  name: game-demo
 data:
-  LAB_NAME: "k8s-labs"
-  API_KEY: "somerandomstring"
-  LOG_LEVEL: "info"
+  # property-like keys; each key maps to a simple value
+  player_initial_lives: "3"
+  ui_properties_file_name: "user-interface.properties"
 
+  #A ConfigMap doesn't differentiate between single line property values and multi-line file-like values. 
+  #What matters is how Pods and other objects consume those values.
+  # file-like keys
+  game.properties: |
+    enemy.types=aliens,monsters
+    player.maximum-lives=5    
+  user-interface.properties: |
+    color.good=purple
+    color.bad=yellow
+    allow.textmode=true

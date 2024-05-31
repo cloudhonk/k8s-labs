@@ -1,24 +1,113 @@
 ### ConfigMap
 A ConfigMap is an API object used to store non-confidential data in key-value pairs. Pods can consume ConfigMaps as environment variables, command-line arguments, or as configuration files in a volume.
 
-#### Create a ConfigMaps
+**NOTES:**
+- ConfigMap object is not designed to hold large chunks of data. The data stored in a ConfigMap cannot exceed 1 MiB.
+- ConfigMap object has data and binaryData fields. The data field is designed to contain UTF-8 strings while the binaryData field is designed to contain binary data as base64-encoded strings.
+- The name of a ConfigMap must be a valid DNS subdomain name.
+- Each key under the data or the binaryData field must consist of alphanumeric characters, -, _ or ..
+- The keys stored in data must not overlap with the keys in the binaryData field.
+- Starting from v1.19, you can add an immutable field to a ConfigMap definition to create an immutable. [Details](https://kubernetes.io/docs/concepts/configuration/configmap/#configmap-immutable).
+
+There are four different ways that you can use a ConfigMap to configure a container inside a Pod:
+
+1. Inside a container command and args
+2. Environment variables for a container
+3. Add a file in read-only volume, for the application to read
+4. Write code to run inside the Pod that uses the Kubernetes API to read a ConfigMap
+
+### Consume ConfigMap
+
+Create a ConfigMaps
 ```bash
-kubectl apply -f configs/configmap.yaml
+~> kubectl apply -f configs/configmap.yaml
+configmap/game-demo created
+
+~> kubectl get configmap
+NAME               DATA   AGE
+game-demo          4      37s
+kube-root-ca.crt   1      6d2h
+
+~> kubectl describe configmap game-demo
+Name:         game-demo
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+user-interface.properties:
+----
+color.good=purple
+color.bad=yellow
+allow.textmode=true
+
+game.properties:
+----
+enemy.types=aliens,monsters
+player.maximum-lives=5    
+
+player_initial_lives:
+----
+3
+ui_properties_file_name:
+----
+user-interface.properties
+
+BinaryData
+====
+
+Events:  <none>
 ```
 
-#### Get the ConfigMaps
+**as environment variables**
+- ConfigMaps consumed as environment variables are not updated automatically and require a pod restart.
+- It's important to note that the range of characters allowed for environment variable names in pods is [restricted](https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/#using-environment-variables-inside-of-your-config). If any keys do not meet the rules, those keys are not made available to your container, though the Pod is allowed to start.
+
+Deploy the envvar consumer pod
 ```bash
-kubectl describe configmaps k8s-labs
+~> kubectl apply -f configs/pod-envvar.yaml 
+pod/configmap-env-pod created
+
+~> kubectl exec configmap-env-pod -- env | grep -e 'PLAYER_INITIAL_LIVES' -e 'UI_PROPERTIES_FILE_NAME'
+PLAYER_INITIAL_LIVES=3
+UI_PROPERTIES_FILE_NAME=user-interface.properties
 ```
 
-#### Reference ConfigMap with a Pod
-```bash
-kubectl apply -f configs/pod-configmap.yaml
-```
+**as volume mount**
 
-#### Fetch the values of the ConfigMaps from Pod
+- Mounted ConfigMaps are updated automatically
+- A container using a ConfigMap as a subPath volume mount will not receive ConfigMap updates.
+- The kubelet checks whether the mounted ConfigMap is fresh on every periodic sync. However, the kubelet uses its local cache for getting the current value of the ConfigMap. The type of the cache is configurable using the `configMapAndSecretChangeDetectionStrategy` field in the KubeletConfiguration struct.
+- A ConfigMap can be either propagated by watch (default), ttl-based, or by redirecting all requests directly to the API server from kubelet config.
+- Because existing Pods maintain a mount point to the deleted ConfigMap, it is recommended to recreate these pods.
+
+Deploy the volume consumer pod
 ```bash
-kubectl exec -it nginx -- env | grep -E 'LOG_LEVEL|API_KEY|LAB_NAME'
+~> kubectl apply -f configs/pod-volume.yaml
+pod/configmap-volume-pod created
+
+~> kubectl exec configmap-volume-pod -- env | grep -e 'PLAYER_INITIAL_LIVES' -e 'UI_PROPERTIES_FILE_NAME'
+
+~> kubectl exec -it configmap-volume-pod -- /bin/sh
+```
+### Immutable Configmap/Secrets
+
+- Once a ConfigMap is marked as immutable, You can only delete and recreate the ConfigMap
+- For clusters that extensively use ConfigMaps, preventing changes to their data has the following advantages:
+  - protects you from accidental (or unwanted) updates that could cause applications outages
+  - improves performance of your cluster by significantly reducing load on kube-apiserver, by closing watches for ConfigMaps marked as immutable.
+
+You can create an immutable ConfigMap by setting the immutable field to true. For example:
+
+```shell
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  ...
+data:
+  ...
+immutable: true
 ```
 
 ### Secrets
