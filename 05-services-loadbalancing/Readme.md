@@ -414,6 +414,61 @@ Events:
   Normal  Sync    9m40s (x2 over 10m)  nginx-ingress-controller  Scheduled for sync
 ```
 
+## Ingress with Multiple Targets
+
+Here we will deploy the Cafe resources where you will be served with Coffee and Tea. If you would like to enjoy your coffe, then coffee shold be served from `cafe.example.com/coffee` and likewise for tea it would be `cafe.example.com/tea`.
+
+### Deploy the Coffee and Tea deployment resources
+```bash
+kubectl apply -f configs/deployment.yaml
+```
+
+### Deploy the Coffee/Tea Service
+```bash
+kubectl apply -f configs/cafe-service.yaml
+```
+
+### Deploy the Cafe Ingress
+```bash
+kubectl apply -f configs/ingress.yaml
+```
+
+### Make sure `cafe.example.com` is resolved from localhost
+```bash
+echo "127.0.0.1 cafe.example.com" | sudo tee -a /etc/hosts
+```
+
+Now all the resources are deployed, we should be served with Tea/Coffee while visiting the stall.
+
+```bash
+wget -qO- --server-response cafe.example.com/tea
+```
+
+```
+# Expected Output
+
+Server address: 10.244.1.52:8080
+Server name: tea-df5655878-hmzsg
+Date: 06/Jun/2024:12:02:02 +0000
+URI: /tea
+Request ID: 98f880faa1e50973edbf12e572795589
+```
+
+```bash
+wget -qO- --server-response cafe.example.com/coffee
+```
+```
+# Expected Output
+
+Server address: 10.244.1.50:8080
+Server name: coffee-7dd75bc79b-jvcsg
+Date: 06/Jun/2024:12:03:51 +0000
+URI: /coffee
+Request ID: b5d523c2e296f251b7a5f3a38a187736
+```
+
+![Ingress](../images/ingress.jpeg)
+
 ## Ingress Controller [details](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)
 
 In order for an Ingress to work in your cluster, there must be an ingress controller running. You need to select at least one ingress controller and make sure it is set up in your cluster. This page lists common ingress controllers that you can deploy.
