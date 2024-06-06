@@ -382,23 +382,23 @@ Deploy Ingress Resource
 kubectl apply -f configs/deployment.yaml
 ```
 
-# Deploy nginx service
+### Deploy nginx service
 ```bash
 kubectl apply -f configs/cluster-service.yaml
 ```
 
-# Deploy ingress resource
+### Deploy ingress resource
 ```bash
 kubectl apply -f configs/ingress.yaml
 ```
 
-# See the ingress resource configuration
+### See the ingress resource configuration
 ```bash
 kubectl describe ingress static-app-ingress -o wide
 
 ```
 
-# You should see the output like mentioned where ingress path /nginx is listening to nginx:80
+### You should see the output like mentioned where ingress path /nginx is listening to nginx:80
 ```
 Ingress Class:    nginx
 Default backend:  nginx:80 (<none>)
@@ -413,7 +413,6 @@ Events:
   ----    ------  ----                 ----                      -------
   Normal  Sync    9m40s (x2 over 10m)  nginx-ingress-controller  Scheduled for sync
 ```
-
 
 ## Ingress Controller [details](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)
 
