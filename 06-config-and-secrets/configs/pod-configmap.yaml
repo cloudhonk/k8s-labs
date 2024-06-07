@@ -15,15 +15,15 @@ spec:
       - name: API_KEY
         valueFrom:
           configMapKeyRef:
-            name: k8s-labs
+            name: game-demo
             key: API_KEY
       - name: LAB_NAME
         valueFrom:
           configMapKeyRef:
-            name: k8s-labs
+            name: game-demo
             key: LAB_NAME
       - name: LOG_LEVEL
         valueFrom:
           configMapKeyRef:
-            name: k8s-labs
+            name: game-demo
             key: LOG_LEVEL

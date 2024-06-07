@@ -45,7 +45,7 @@ allow.textmode=true
 game.properties:
 ----
 enemy.types=aliens,monsters
-player.maximum-lives=5    
+player.maximum-lives=5
 
 player_initial_lives:
 ----
@@ -66,7 +66,7 @@ Events:  <none>
 
 Deploy the envvar consumer pod
 ```bash
-~> kubectl apply -f configs/pod-envvar.yaml 
+~> kubectl apply -f configs/pod-envvar.yaml
 pod/configmap-env-pod created
 
 ~> kubectl exec configmap-env-pod -- env | grep -e 'PLAYER_INITIAL_LIVES' -e 'UI_PROPERTIES_FILE_NAME'
@@ -91,6 +91,23 @@ pod/configmap-volume-pod created
 
 ~> kubectl exec -it configmap-volume-pod -- /bin/sh
 ```
+
+**as Custom Initialization
+
+ConfigMaps can be used in init containers to set up an environment before the main application starts. Here we will be using `InitContainer` concepts to spin up helper container that will run first and do some stuff before running the actual application container.
+
+The InitContainer utilize the configmaps script and run it before the application starts.
+
+### Apply the ConfigMap and Pod configuration
+```bash
+kubectl apply -f configs/cm-pod-init.yaml
+```
+
+### Check the logs of Init Containers
+```bash
+kubectl logs k8s-labs-01 -c k8s-labs-initcontainer
+```
+
 ### Immutable Configmap/Secrets
 
 - Once a ConfigMap is marked as immutable, You can only delete and recreate the ConfigMap
@@ -125,6 +142,5 @@ kubectl apply -f configs/pod-secrets.yaml
 
 #### Fetch the Secrets Value from a Pod
 ```bash
-kubectl exec -it nginx -- /bin/sh -c 'echo $password'
+kubectl exec -it nginx-101 -- /bin/sh -c 'echo $password'
 ```
-
