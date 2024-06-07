@@ -243,7 +243,7 @@ stringData:
   password: t0p-Secret # required field for kubernetes.io/basic-auth
 EOF
 ```
-#### 4.kubernetes.io/ssh-auth: credentials for SSH authentication
+#### 4. kubernetes.io/ssh-auth: credentials for SSH authentication
 
 When using this Secret type, you will have to specify a `ssh-privatekey` key-value pair in the data (or stringData) field as the SSH credential to use.
 
@@ -346,6 +346,7 @@ EOF
 - You must explicitly define environment variables or map a volume into a container in order to provide access to any other Secret.
 
 #### Create a secrets
+
 ```bash
 kubectl apply -f configs/secrets.yaml
 ```
