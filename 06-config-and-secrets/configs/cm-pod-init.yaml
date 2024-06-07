@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-config
+data:
+  setup-script: |
+    #!/bin/sh
+    echo "Setting up environment"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: k8s-labs-01
+spec:
+  initContainers:
+  - name: k8s-labs-initcontainer
+    image: busybox
+    command: ["/bin/sh", "-c", "$(SETUP_SCRIPT)"]
+    env:
+    - name: SETUP_SCRIPT
+      valueFrom:
+        configMapKeyRef:
+          name: init-config
+          key: setup-script
+  containers:
+  - name: k8s-labs
+    image: busybox:1.28
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']
