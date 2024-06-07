@@ -16,7 +16,7 @@ There are four different ways that you can use a ConfigMap to configure a contai
 3. Add a file in read-only volume, for the application to read
 4. Write code to run inside the Pod that uses the Kubernetes API to read a ConfigMap
 
-### Consume ConfigMap
+### Consuming ConfigMap
 
 Create a ConfigMaps
 ```bash
@@ -98,7 +98,7 @@ enemy.types=aliens,monsters
 player.maximum-lives=5
 ```
 
-**as Custom Initialization
+**as Custom Initialization**
 
 ConfigMaps can be used in init containers to set up an environment before the main application starts. Here we will be using `InitContainer` concepts to spin up helper container that will run first and do some stuff before running the actual application container.
 
@@ -150,7 +150,7 @@ NOTES:
 
 ### Secret Types
 
-- **Opaque**: arbitrary user-defined data
+#### 1. Opaque: arbitrary user-defined data
 Opaque is the default Secret type if you don't explicitly specify a type in a Secret manifest.
 
 ```shell
@@ -193,7 +193,7 @@ data:
 EOF
 ```
 
-- **Docker Registry Secret**
+#### 2. Docker Registry Secret
   - SubType: `kubernetes.io/dockercfg`
     This is legacy type. Should be base64 encoded content of the `~/.dockercfg` file.
   - SubType: `kubernetes.io/dockerconfigjson`
@@ -225,7 +225,7 @@ kubectl delete secret secret-tiger-docker
 
 NOTE: It is suggested to use [credential providers](https://kubernetes.io/docs/tasks/administer-cluster/kubelet-credential-provider/) to dynamically and securely provide pull secrets on-demand.
 
-- **kubernetes.io/basic-auth**: credentials for basic authentication
+#### 3. kubernetes.io/basic-auth: credentials for basic authentication
 When using this Secret type, the data field of the Secret must contain one of the following two keys:
 
 `username`: the user name for authentication
@@ -243,7 +243,7 @@ stringData:
   password: t0p-Secret # required field for kubernetes.io/basic-auth
 EOF
 ```
-- **kubernetes.io/ssh-auth**: credentials for SSH authentication
+#### 4.kubernetes.io/ssh-auth: credentials for SSH authentication
 
 When using this Secret type, you will have to specify a `ssh-privatekey` key-value pair in the data (or stringData) field as the SSH credential to use.
 
@@ -260,7 +260,7 @@ data:
     UG91cmluZzYlRW1vdGljb24lU2N1YmE=
 ```
 
-- **kubernetes.io/tls**	data: for a TLS client or server
+#### 5. kubernetes.io/tls: for a TLS client or server
 Secret type is for storing a certificate and its associated key that are typically used for TLS. When using this type of Secret, the `tls.key` and the `tls.crt` key must be provided in the data (or stringData) field of the Secret configuration
 
 ```shell
@@ -302,7 +302,7 @@ kubectl create secret tls my-tls-secret \
   --key=path/to/key/file
 ```
 
-- **bootstrap.kubernetes.io/token**:	bootstrap token data
+#### 6. bootstrap.kubernetes.io/token:	bootstrap token data
 
 Secret type is for tokens used during the node bootstrap process. It stores tokens used to sign well-known ConfigMaps. A bootstrap token Secret is usually created in the kube-system namespace and named in the form bootstrap-token-<token-id> where <token-id> is a 6 character string of the token ID.
 
@@ -325,7 +325,7 @@ data:
 EOF
 ```
 
-### Consume Secret
+### Consuming Secret
 
 - Secret needs to be created before any Pods that depend on it.
 - When you reference a Secret in a Pod, you can mark the Secret as optional.
