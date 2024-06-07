@@ -9,12 +9,12 @@ spec:
       command: ["sleep", "3600"]
       env:
         # Define the environment variable
-        - name: player-initial-lives # Notice that the case is different here
+        - name: PLAYER_INITIAL_LIVES # Notice that the case is different here
                                      # from the key name in the ConfigMap.
           valueFrom:
             configMapKeyRef:
               name: game-demo           # The ConfigMap this value comes from.
-              key:  PLAYER_INITIAL_LIVES # The key to fetch.
+              key: player_initial_lives # The key to fetch.
         - name: UI_PROPERTIES_FILE_NAME
           valueFrom:
             configMapKeyRef:
