@@ -74,6 +74,15 @@ PLAYER_INITIAL_LIVES=3
 UI_PROPERTIES_FILE_NAME=user-interface.properties
 ```
 
+Furthermore, we can associate ConfigMaps with Deployment resource as well.
+```bash
+kubectl apply -f ./configs/configmap-deployment.yaml
+```
+
+```bash
+kubectl exec deployment/k8s-labs-deployment -- env | grep -e 'LAB_NAME' -e 'LOG_LEVEL'
+```
+
 **as volume mount**
 
 - Mounted ConfigMaps are updated automatically

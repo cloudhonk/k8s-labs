@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-labs-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: k8s-labs
+  template:
+    metadata:
+      labels:
+        app: k8s-labs
+    spec:
+      containers:
+      - name: k8s-labs
+        image: nginx:1.14.2
+        env:
+        - name: LAB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: game-demo
+              key: LAB_NAME
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: game-demo
+              key: LOG_LEVEL
