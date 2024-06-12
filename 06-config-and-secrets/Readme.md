@@ -1,7 +1,7 @@
 ### ConfigMap
 A ConfigMap is an API object used to store non-confidential data in key-value pairs. Pods can consume ConfigMaps as environment variables, command-line arguments, or as configuration files in a volume.
 
-[ConfigMap](../images/config-map.png)
+[ConfigMap](../images/Config-Map.png)
 
 **NOTES:**
 - ConfigMap object is not designed to hold large chunks of data. The data stored in a ConfigMap cannot exceed 1 MiB.
