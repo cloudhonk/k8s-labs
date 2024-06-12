@@ -1,6 +1,8 @@
 ### ConfigMap
 A ConfigMap is an API object used to store non-confidential data in key-value pairs. Pods can consume ConfigMaps as environment variables, command-line arguments, or as configuration files in a volume.
 
+[ConfigMap](../images/config-map.png)
+
 **NOTES:**
 - ConfigMap object is not designed to hold large chunks of data. The data stored in a ConfigMap cannot exceed 1 MiB.
 - ConfigMap object has data and binaryData fields. The data field is designed to contain UTF-8 strings while the binaryData field is designed to contain binary data as base64-encoded strings.
@@ -129,6 +131,8 @@ immutable: true
 
 ### Secrets
 A Secret is an object that contains a small amount of sensitive data such as a password, a token, or a key.
+
+[Secrets](../images/K8s-Secret.png)
 
 #### Create a secrets
 ```bash
