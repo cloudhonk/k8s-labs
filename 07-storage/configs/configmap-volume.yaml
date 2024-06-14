@@ -27,3 +27,5 @@ spec:
         items:
           - key: log_level
             path: log_level
+          - key: busyxbox_check
+            path: busyxbox_check

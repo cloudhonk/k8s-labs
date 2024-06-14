@@ -163,20 +163,199 @@ volume is managed independently of the Pods that access it, ensuring the data re
 
 PVs work in conjunction with Persistent Volume Claims (PVCs), another type of object that permits Pods to request access to PVs. To successfully utilize persistent storage in a cluster, you'll need a PV and a PVC that connects it to your Pod.
 
+- A PersistentVolume (PV) is a piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using Storage Classes.
+- A PersistentVolumeClaim (PVC) is a request for storage by a user.
+
+### Lifecycle of Persistent Volume
+
+- Provisioning: 
+  
+  dynamic/static
+
+- Binding: 
+
+A control loop in the control plane watches for new PVCs, finds a matching PV (if possible), and binds them together. If a PV was dynamically provisioned for a new PVC, the loop will always bind that PV to the PVC.
+
+Claims will remain unbound indefinitely if a matching volume does not exist.
+
+A PVC to PV binding is a one-to-one mapping
+
+- Using
+
+Pods use claims as volumes.
+
+For volumes that support multiple access modes, the user specifies which mode is desired when using their claim as a volume in a Pod.
+
+Once a user has a claim and that claim is bound, the bound PV belongs to the user for as long as they need it.
+
+- Storage Object in Use Protection
+
+Ensure PersistentVolumeClaims (PVCs) in active use by a Pod and PersistentVolume (PVs) that are bound to PVCs are not removed from the system, as this may result in data loss.
+
+If a user deletes a PVC in active use by a Pod, the PVC is not removed immediately. PVC removal is postponed until the PVC is no longer actively used by any Pods. 
+
+Also, if an admin deletes a PV that is bound to a PVC, the PV is not removed immediately. PV removal is postponed until the PV is no longer bound to a PVC.
+
+- Reclaiming
+
+The reclaim policy for a PersistentVolume tells the cluster what to do with the volume `after it has been released of its claim`. Currently, volumes can either be `Retained`, `Recycled`, or `Deleted`.
+
+Retain: The Retain reclaim policy allows for manual reclamation of the resource. When the PersistentVolumeClaim is deleted, the PersistentVolume still exists and the volume is considered "released". But it is not yet available for another claim because the previous claimant's data remains on the volume.
+
+Delete: For volume plugins that support the Delete reclaim policy, deletion removes both the PersistentVolume object from Kubernetes, as well as the associated storage asset in the external infrastructure.
+
+Recycle: The Recycle reclaim policy is deprecated. Instead, the recommended approach is to use dynamic provisioning. If supported by the underlying volume plugin, the Recycle reclaim policy performs a basic scrub (`rm -rf /thevolume/*`) on the volume and makes it available again for a new claim. 
+
+- Reserving a PersistentVolume
+
+By specifying a PersistentVolume in a PersistentVolumeClaim, you declare a binding between that specific PV and PVC. If the PersistentVolume exists and has not reserved PersistentVolumeClaims through its claimRef field, then the PersistentVolume and PersistentVolumeClaim will be bound.
+
+- Expanding PVCs
+
+You can only expand a PVC if its storage class's allowVolumeExpansion field is set to true.
+
+
 ### Types of Persistent Volume
 - local - Devices mounted locally to the cluster
-- hostPath - Stores data within a named directory on a Node
+- hostPath - (for single node testing only; WILL NOT WORK in a multi-node cluster; consider using local volume instead)
 - nfs - Used to access NFS mounts
 - iscsi - iSCSI (SCSI over IP)
 - csi - Integration with storage provider that supports the Container Storage Interface
 - cephfs - Allow the use of CephFS Volumes
 - fc - Fiber Channel (FC)
 
-### The Lifecycle of PVs and PVCs
-- Provisioning
-- Binding
-- Using
-- Reclaiming
+### Presitent Volume configurations
+
+**Capacity:**
+
+  ```yaml
+  spec:
+    capacity:
+      storage: 5Gi
+  ```
+
+**Volume Mode:**
+
+Filesystem is the default mode used when volumeMode parameter is omitted.
+
+A volume with volumeMode: Filesystem is mounted into Pods into a directory. If the volume is backed by a block device and the device is empty, Kubernetes creates a filesystem on the device before mounting it for the first time.
+
+```yaml
+spec:
+  volumeMode:
+    storage: FileSystem #Block
+```
+
+**Access Modes(Required):**
+
+A PersistentVolume can be mounted on a host in any way supported by the resource provider. Kubernetes uses volume access modes to match PersistentVolumeClaims and PersistentVolumes. 
+
+```yaml
+spec:
+  accessModes:
+    - ReadWriteOnce #ReadOnlyMany, ReadWriteMany, ReadWriteOncePod
+```
+
+- `ReadWriteOnce`
+the volume can be mounted as read-write by a single node. ReadWriteOnce access mode still can allow multiple pods to access the volume when the pods are running on the same node. For single pod access, please see `ReadWriteOncePod`.
+
+- `ReadOnlyMany`
+the volume can be mounted as read-only by many nodes.
+
+- `ReadWriteMany`
+the volume can be mounted as read-write by many nodes.
+
+- `ReadWriteOncePod`
+the volume can be mounted as read-write by a single Pod. Use ReadWriteOncePod access mode if you want to ensure that only one pod across the whole cluster can read that PVC or write to it.
+
+**NOTES**
+
+- Volume access modes do not enforce write protection once the storage has been mounted. Even if the access modes are specified as ReadWriteOnce, ReadOnlyMany, or ReadWriteMany, they don't set any constraints on the volume.
+- A volume can only be mounted using one access mode at a time, even if it supports many.
+
+**Class:**
+
+A PV can have a class, which is specified by setting the storageClassName attribute to the name of a StorageClass. A PV of a particular class can only be bound to PVCs requesting that class. A PV with no storageClassName has no class and can only be bound to PVCs that request no particular class.
+
+In the past, the annotation `volume.beta.kubernetes.io/storage-class` was used instead of the storageClassName attribute. This annotation is still working; however, it will become fully deprecated in a future Kubernetes release.
+
+
+**Reclaim Policy:**
+
+- Retain -- manual reclamation
+- Recycle -- basic scrub (rm -rf /thevolume/*)
+- Delete -- delete the volume
+
+**Mount Options:**
+
+A Kubernetes administrator can specify additional mount options for when a Persistent Volume is mounted on a node. Mount options are not validated. If a mount option is invalid, the mount fails.
+
+The following volume types support mount options. The list doesn't include deprecated types:
+
+- azureFile
+- iscsi
+- nfs
+- vsphereVolume
+
+**Node Affinity:**
+
+A PV can specify node affinity to define constraints that limit what nodes this volume can be accessed from. Pods that use a PV will only be scheduled to nodes that are selected by the node affinity. To specify node affinity, set nodeAffinity in the .spec of a PV.
+
+NOTE: For most volume types, you do not need to set this field. You need to explicitly set this for local volumes.
+
+**Phase:**
+
+Available, Bound, Released, Failed
+
+### PersistentVolumeClaims configurations
+
+**Access Modes:**
+
+Claims use the same conventions as volumes when requesting storage with specific access modes.
+
+**Volume Modes:**
+
+Claims use the same convention as volumes to indicate the consumption of the volume as either a filesystem or block device.
+
+**Resources:**
+
+Claims, like Pods, can request specific quantities of a resource. In this case, the request is for storage. The same resource model applies to both volumes and claims.
+
+```yaml
+spec:
+  resources:
+    requests:
+      storage: 8Gi
+```
+
+
+**Selector:**
+
+Claims can specify a label selector to further filter the set of volumes. Only the volumes whose labels match the selector can be bound to the claim. The selector can consist of two fields:
+
+- matchLabels
+- matchExpressions
+
+```yaml
+spec:
+  selector:
+    matchLabels:
+      release: "stable"
+    matchExpressions:
+      - {key: environment, operator: In, values: [dev]}
+```
+
+**Class:**
+
+A claim can request a particular class by specifying the name of a StorageClass using the attribute storageClassName. Only PVs of the requested class, ones with the same storageClassName as the PVC, can be bound to the PVC.
+
+PVCs don't necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster.
+
+```yaml
+spec:
+  storageClassName: slow
+```
+
 
 ### Create a Persistent Volume
 ```bash
@@ -204,6 +383,95 @@ A StorageClass provides a way for administrators to describe the classes of stor
 Different classes might map to quality-of-service levels, or to backup policies, or to arbitrary policies determined by the cluster administrators.
 
 When a PVC does not specify a storageClassName, the default StorageClass is used.
+
+### StorageClass objects
+
+Each StorageClass contains the fields `provisioner`, `parameters`, and `reclaimPolicy`, which are used when a PersistentVolume belonging to the class needs to be dynamically provisioned to satisfy a PersistentVolumeClaim (PVC).
+
+Sample
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: low-latency
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: csi-driver.example-vendor.example
+reclaimPolicy: Retain # default value is Delete
+allowVolumeExpansion: true
+mountOptions:
+  - discard # this might enable UNMAP / TRIM at the block storage layer
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  guaranteedReadWriteLatency: "true" # provider-specific
+```
+
+**Default StorageClass:**
+
+If you set the `storageclass.kubernetes.io/is-default-class` annotation to true on more than one StorageClass in your cluster, and you then create a PersistentVolumeClaim with no storageClassName set, Kubernetes uses the most recently created default StorageClass.
+
+**Provisioner:**
+
+Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs. This field must be specified.
+
+**Reclaim policy:**
+
+PersistentVolumes that are dynamically created by a StorageClass will have the reclaim policy specified in the reclaimPolicy field of the class, which can be either Delete or Retain.
+
+**Volume expansion:**
+
+PersistentVolumes can be configured to be expandable. This allows you to resize the volume by editing the corresponding PVC object, requesting a new larger amount of storage.
+
+**NOTE:** You can only use the volume expansion feature to grow a Volume, not to shrink it.
+
+**Mount options:**
+
+PersistentVolumes that are dynamically created by a StorageClass will have the mount options specified in the mountOptions field of the class.
+
+**Volume binding mode:**
+
+The volumeBindingMode field controls when volume binding and dynamic provisioning should occur. When unset, `Immediate` mode is used by default.
+
+The `Immediate` mode indicates that volume binding and dynamic provisioning occurs once the PersistentVolumeClaim is created.
+
+`WaitForFirstConsumer` mode delays the binding and provisioning of a PersistentVolume until a Pod using the PersistentVolumeClaim is created.
+
+
+**NOTE:** 
+
+If you choose to use `WaitForFirstConsumer`, do not use `nodeName` in the `Pod spec` to specify node affinity. If `nodeName` is used in this case, the scheduler will be bypassed and PVC will remain in pending state.
+
+Instead, you can use node selector for `kubernetes.io/hostname:`
+
+Example:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: task-pv-pod
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: kube-01
+  volumes:
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: task-pv-claim
+  containers:
+    - name: task-pv-container
+      image: nginx
+      ports:
+        - containerPort: 80
+          name: "http-server"
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: task-pv-storage
+```
+
+**Parameters:**
+
+StorageClasses have parameters that describe volumes belonging to the storage class. Different parameters may be accepted depending on the provisioner. When a parameter is omitted, some default is used.
 
 ### Dynamic Provisioning of PVs
 Static provisioning of PVs, as shown above, is cumbersome: you must create the PV, and then the PVC while ensuring their properties match.
