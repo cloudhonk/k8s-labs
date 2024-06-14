@@ -1,6 +1,9 @@
 apiVersion: v1
 data:
   log_level: INFO
+  busyxbox_check: |
+    sleep 5
+    uptime
 kind: ConfigMap
 metadata:
   name: log-config
