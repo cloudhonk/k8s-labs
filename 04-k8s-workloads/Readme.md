@@ -234,3 +234,46 @@ pods=$(kubectl get pods --selector=batch.kubernetes.io/job-name=pi --output=json
 ```bash
 kubectl logs $pods
 ```
+
+## Stateful sets
+
+
+**NOTES**
+- Manages the deployment and scaling of a set of Pods, and provides guarantees about the ordering and uniqueness of these Pods.
+
+- StatefulSets are valuable for applications that require one or more of the following.
+
+  - Stable, unique network identifiers.
+  - Stable, persistent storage.
+  - Ordered, graceful deployment and scaling.
+  - Ordered, automated rolling updates.
+
+**Limitations**
+
+- Deleting and/or scaling a StatefulSet down will not delete the volumes associated with the StatefulSet.
+- StatefulSets currently require a Headless Service to be responsible for the network identity of the Pods. You are responsible for creating this Service.
+- StatefulSets do not provide any guarantees on the termination of pods when a StatefulSet is deleted.
+
+#### Pod Identity
+
+- By default, pods will be assigned ordinals from `0 up through N-1`. The StatefulSet controller will also add a pod label with this index: `apps.kubernetes.io/pod-index`.
+- `.spec.ordinals` is an optional field that allows you to configure the integer ordinals assigned to each Pod.
+
+#### Stable Network ID
+
+- The pattern for the constructed hostname is `$(statefulset name)-$(ordinal)`
+
+- Headless service when used in combination with stateful sets can be used to give subdomain to the pods. eg. `nslookup web-0.nginx.default.svc.cluster.local`
+
+- For each VolumeClaimTemplate entry defined in a StatefulSet, each Pod receives one PersistentVolumeClaim. In the nginx example above, each Pod receives a single PersistentVolume
+
+- When the StatefulSet controller creates a Pod, it adds a label, `statefulset.kubernetes.io/pod-name`, the new Pod is labelled with `apps.kubernetes.io/pod-index`.
+
+#### Deployment and Scaling
+
+- For a StatefulSet with N replicas, when Pods are being deployed, they are created sequentially, in order from {0..N-1}.
+- When Pods are being deleted, they are terminated in reverse order, from {N-1..0}.
+- Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready.
+- Before a Pod is terminated, all of its successors must be completely shutdown.
+
+NOTE: Default `.spec.podManagementPolicy` is `OrderedReady` and above points are relevant during this scenario but if `podManagementPolicy` is set to `Parallel` the strict ordering is ignored both for scaling out/in.
