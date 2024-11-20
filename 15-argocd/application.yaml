@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: https://github.com/cloudhonk/k8s-labs.git
     targetRevision: feat/k8s-ci-cd
-    path: dev
+    path: 15-argocd/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: myapp
