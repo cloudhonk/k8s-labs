@@ -8,9 +8,8 @@ spec:
 
   source:
     repoURL: https://github.com/cloudhonk/k8s-labs.git
-    targetRevision: HEAD
+    targetRevision: feat/k8s-ci-cd
     path: dev
-    ref: feat/k8s-ci-cd
   destination:
     server: https://kubernetes.default.svc
     namespace: myapp
